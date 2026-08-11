@@ -11,15 +11,17 @@ WordPress ↔ IPS / Invision Community single sign-on bridge.
 [![Download WP Plugin](https://img.shields.io/badge/Download-WP--SSO%20Plugin-blue?logo=wordpress&logoColor=white)](https://github.com/drnecrotix/WP-SSO/releases/latest/download/wp-sso.zip)
 [![Download IPS Integration](https://img.shields.io/badge/Download-IPS%20Integration-5C2D91)](https://github.com/drnecrotix/WP-SSO/releases/latest/download/WordPress-SSO-IPS.xml)
 
-WP-SSO lets an IPS / Invision Community installation use an existing WordPress authentication session and account data. The project includes a standard installable WordPress plugin, the original legacy endpoint for migration compatibility, and the IPS plugin definition.
+WP-SSO lets an IPS / Invision Community installation use an existing WordPress authentication session and account data. The project includes a standard installable WordPress plugin, an optional generated compatibility API file, the original legacy endpoint for migration compatibility, and the IPS plugin definition.
 
 > **Project status:** active modernization of a legacy integration. Test against your exact WordPress and IPS versions before production deployment.
 
 ## ✨ Features
 
 - installable WordPress plugin under `wp-sso/`;
-- Settings → **WP-SSO Bridge** configuration page;
+- guided setup under Settings → **WP-SSO Bridge**;
 - automatically generated API secret on activation;
+- optional **Generate & Download API file** tool for legacy IPS integrations;
+- generated API compatibility file contains no API secret;
 - API secret from WordPress settings, `WP_SSO_API_KEY` environment variable, or PHP constant;
 - `X-WP-SSO-Key` authentication;
 - `Authorization: Bearer` authentication;
@@ -89,21 +91,51 @@ define('WP_SSO_API_KEY', 'your-long-random-secret');
 
 Environment/constant values take precedence over the database setting.
 
-### 4. Install the IPS integration
+### 4. Choose the endpoint
 
-Import `WordPress-SSO-IPS.xml` from the IPS / Invision Community plugin administration area and configure it with the WordPress endpoint and matching secret.
-
-> The bundled IPS definition is legacy and may still depend on query-string authentication. Header-based authentication is preferred for modern integrations.
-
-## 🔌 Plugin endpoint
-
-The standard plugin endpoint is:
+The recommended native endpoint does not require any additional PHP file:
 
 ```text
 https://example.com/?wp_sso_api=1&type=test
 ```
 
-Supported `type` values:
+If the IPS integration expects a physical PHP endpoint file, use **Settings → WP-SSO Bridge → Generate & Download API file**.
+
+The plugin generates:
+
+```text
+wp-sso-api.php
+```
+
+The generated file contains **no API secret**. It only loads WordPress and passes the request to the installed WP-SSO plugin.
+
+### 5. Upload the generated API file
+
+Upload `wp-sso-api.php` to the **WordPress root directory**. This is the same directory that contains:
+
+```text
+wp-config.php
+wp-load.php
+wp-admin/
+wp-content/
+wp-includes/
+```
+
+Do **not** place it inside `wp-content/plugins/`, your theme directory, or the uploads directory.
+
+After upload, the compatibility endpoint will look like:
+
+```text
+https://example.com/wp-sso-api.php?type=test
+```
+
+### 6. Install the IPS integration
+
+Import `WordPress-SSO-IPS.xml` from the IPS / Invision Community plugin administration area and configure it with either the native plugin endpoint or the generated compatibility-file endpoint, plus the matching secret.
+
+> The bundled IPS definition is legacy and may still depend on query-string authentication. Header-based authentication is preferred for modern integrations.
+
+## 🔌 Supported endpoint types
 
 | Type | Purpose |
 | --- | --- |
@@ -142,7 +174,7 @@ The legacy query-string form is deprecated because URLs can appear in access log
 
 `wp_api.php` remains in the repository for existing installations that copied the endpoint into the WordPress root.
 
-New installations should use the standard WordPress plugin. Existing installations can migrate gradually by enabling `wp-sso`, configuring the same secret, changing the IPS endpoint, verifying `type=test`, and then removing the standalone file after successful validation.
+New installations should use the standard WordPress plugin. If a physical PHP endpoint is still required, use the new generated `wp-sso-api.php` bootstrap instead of copying a secret-bearing legacy file.
 
 ## 🍪 Shared cookie domain
 
@@ -161,6 +193,8 @@ The maintained implementation includes:
 - constant-time API-secret comparison with `hash_equals()`;
 - header/Bearer authentication;
 - generated secrets instead of a committed default credential;
+- generated compatibility API files with no embedded secret;
+- nonce and administrator-capability checks before API-file generation;
 - request-type allowlisting;
 - HTTP/HTTPS redirect sanitization;
 - no-cache API responses;
@@ -184,6 +218,8 @@ The repository includes:
 ## ⚠️ Compatibility notes
 
 - The WordPress plugin requires PHP 7.4+.
+- The generated API compatibility file requires the plugin to remain installed and active.
+- The generated API file must be in the same directory as `wp-load.php`.
 - The legacy IPS XML has not yet been fully rewritten around header-only authentication.
 - `userinfo` depends on the browser request carrying a valid WordPress logged-in cookie.
 - Full integration tests against current WordPress and IPS releases are still planned.
