@@ -1,0 +1,133 @@
+name: Prepare WP-SSO Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without the v prefix (for example 1.2.0)'
+        required: true
+      notes:
+        description: 'Optional short release summary for CHANGELOG.md'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    name: Prepare release pull request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version input
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must use semantic versioning, for example 1.2.0."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists."
+            exit 1
+          fi
+
+      - name: Update version metadata
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          version = "${{ inputs.version }}"
+
+          plugin = Path("wp-sso/wp-sso.php")
+          text = plugin.read_text(encoding="utf-8")
+          text = re.sub(r"(?m)^ \* Version: .*?$", f" * Version: {version}", text, count=1)
+          text = re.sub(r"const VERSION = '[^']+';", f"const VERSION = '{version}';", text, count=1)
+          plugin.write_text(text, encoding="utf-8")
+
+          readme = Path("wp-sso/readme.txt")
+          text = readme.read_text(encoding="utf-8")
+          text = re.sub(r"(?m)^Stable tag: .*?$", f"Stable tag: {version}", text, count=1)
+          readme.write_text(text, encoding="utf-8")
+
+      - name: Update changelog
+        shell: python
+        run: |
+          from pathlib import Path
+          from datetime import date
+
+          version = "${{ inputs.version }}"
+          notes = """${{ inputs.notes }}""".strip()
+          changelog = Path("CHANGELOG.md")
+          text = changelog.read_text(encoding="utf-8")
+
+          header = f"## [{version}] - {date.today().isoformat()}\n\n"
+          if notes:
+            section = header + "### Changed\n\n- " + notes.replace("\n", "\n- ") + "\n\n"
+          else:
+            section = header + "### Changed\n\n- Prepare WP-SSO release " + version + ".\n\n"
+
+          marker = "## [Unreleased]"
+          index = text.find(marker)
+          if index == -1:
+            raise SystemExit("CHANGELOG.md does not contain an [Unreleased] section.")
+
+          next_section = text.find("\n## [", index + len(marker))
+          if next_section == -1:
+            text = text.rstrip() + "\n\n" + section
+          else:
+            text = text[:next_section+1] + "\n" + section + text[next_section+1:]
+
+          compare_line = f"[{version}]: https://github.com/drnecrotix/WP-SSO/compare/v{version.rsplit('.', 1)[0]}.0...v{version}"
+          if compare_line not in text:
+            text = text.rstrip() + "\n" + compare_line + "\n"
+
+          changelog.write_text(text, encoding="utf-8")
+
+      - name: Validate updated files
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          grep -q "Version: $VERSION" wp-sso/wp-sso.php
+          grep -q "const VERSION = '$VERSION'" wp-sso/wp-sso.php
+          grep -q "Stable tag: $VERSION" wp-sso/readme.txt
+          php -l wp-sso/wp-sso.php
+
+      - name: Create release branch
+        id: branch
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          BRANCH="release/v$VERSION"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          git checkout -b "$BRANCH"
+
+      - name: Commit release preparation
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wp-sso/wp-sso.php wp-sso/readme.txt CHANGELOG.md
+          git commit -m "chore: prepare v$VERSION"
+          git push --set-upstream origin "${{ steps.branch.outputs.branch }}"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          gh pr create \
+            --base main \
+            --head "${{ steps.branch.outputs.branch }}" \
+            --title "chore: prepare v$VERSION" \
+            --body "Automated release preparation for WP-SSO v$VERSION.\n\nThis PR updates the plugin header version, internal VERSION constant, WordPress stable tag, and CHANGELOG.md. After required checks pass and this PR is merged, run the Release WP-SSO workflow with version $VERSION."
