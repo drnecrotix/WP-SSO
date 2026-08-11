@@ -1,0 +1,91 @@
+name: Release WP-SSO
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release.yml'
+      - 'RELEASE_NOTES.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without the v prefix (for example 1.1.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="1.0.0"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate plugin version
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          grep -q "Version: $VERSION" wp-sso/wp-sso.php
+          grep -q "const VERSION = '$VERSION'" wp-sso/wp-sso.php
+          grep -q "Stable tag: $VERSION" wp-sso/readme.txt
+
+      - name: Validate PHP syntax
+        run: php -l wp-sso/wp-sso.php
+
+      - name: Build release assets
+        shell: bash
+        run: |
+          mkdir -p build
+          zip -r build/wp-sso.zip wp-sso -x '*.DS_Store'
+          cp 'WordPress SSO.xml' build/WordPress-SSO-IPS.xml
+
+      - name: Create tag when missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "WP-SSO $TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          TITLE="WP-SSO $TAG"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" build/wp-sso.zip build/WordPress-SSO-IPS.xml --clobber
+          else
+            gh release create "$TAG" \
+              build/wp-sso.zip \
+              build/WordPress-SSO-IPS.xml \
+              --title "$TITLE" \
+              --notes-file RELEASE_NOTES.md \
+              --verify-tag
+          fi
