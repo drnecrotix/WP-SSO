@@ -7,9 +7,6 @@ on:
       - '.github/workflows/package-plugin.yml'
   push:
     branches: [main]
-    paths:
-      - 'wp-sso/**'
-      - '.github/workflows/package-plugin.yml'
   workflow_dispatch:
 
 permissions:
