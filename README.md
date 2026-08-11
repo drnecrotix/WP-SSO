@@ -39,7 +39,9 @@ WP-SSO lets an IPS / Invision Community installation use an existing WordPress a
 │   └── readme.txt              # WordPress plugin metadata/instructions
 ├── wp_api.php                  # Legacy standalone endpoint
 ├── WordPress SSO.xml           # IPS / Invision Community plugin definition
-├── .github/workflows/          # CI, CodeQL, packaging and release automation
+├── .github/                    # CI, releases, issue forms and PR template
+├── CHANGELOG.md                # Release history and unreleased work
+├── CONTRIBUTING.md             # Contribution and testing guidance
 ├── SECURITY.md                 # Security policy
 ├── LICENSE                     # MIT license
 └── README.md
@@ -195,7 +197,7 @@ The repository includes:
 
 ## 🤝 Contributing
 
-Bug reports, compatibility findings, documentation improvements, and security-conscious refactors are welcome. Keep pull requests focused and include the WordPress, IPS, and PHP versions used during testing.
+Bug reports, compatibility findings, documentation improvements, and security-conscious refactors are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, use the repository issue forms for bugs and feature requests, and keep release-worthy changes reflected in [CHANGELOG.md](CHANGELOG.md).
 
 ## 📄 License
 
