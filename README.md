@@ -2,12 +2,16 @@
 
 WordPress ↔ IPS / Invision Community single sign-on bridge.
 
+[![Latest Release](https://img.shields.io/github/v/release/drnecrotix/WP-SSO?display_name=tag&sort=semver)](https://github.com/drnecrotix/WP-SSO/releases/latest)
 [![PHP Lint](https://github.com/drnecrotix/WP-SSO/actions/workflows/php-lint.yml/badge.svg)](https://github.com/drnecrotix/WP-SSO/actions/workflows/php-lint.yml)
 [![CodeQL](https://github.com/drnecrotix/WP-SSO/actions/workflows/codeql.yml/badge.svg)](https://github.com/drnecrotix/WP-SSO/actions/workflows/codeql.yml)
 [![WordPress Plugin Package](https://github.com/drnecrotix/WP-SSO/actions/workflows/package-plugin.yml/badge.svg)](https://github.com/drnecrotix/WP-SSO/actions/workflows/package-plugin.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-WP-SSO lets an IPS / Invision Community installation use an existing WordPress authentication session and account data. The project now includes a standard installable WordPress plugin, the original legacy endpoint for migration compatibility, and the IPS plugin definition.
+[![Download WP Plugin](https://img.shields.io/badge/Download-WP--SSO%20Plugin-blue?logo=wordpress&logoColor=white)](https://github.com/drnecrotix/WP-SSO/releases/latest/download/wp-sso.zip)
+[![Download IPS Integration](https://img.shields.io/badge/Download-IPS%20Integration-5C2D91)](https://github.com/drnecrotix/WP-SSO/releases/latest/download/WordPress-SSO-IPS.xml)
+
+WP-SSO lets an IPS / Invision Community installation use an existing WordPress authentication session and account data. The project includes a standard installable WordPress plugin, the original legacy endpoint for migration compatibility, and the IPS plugin definition.
 
 > **Project status:** active modernization of a legacy integration. Test against your exact WordPress and IPS versions before production deployment.
 
@@ -24,7 +28,7 @@ WP-SSO lets an IPS / Invision Community installation use an existing WordPress a
 - authenticated user ID, display name, email, and roles;
 - WordPress role discovery;
 - login, registration, and logout URL generation;
-- PHP syntax CI, CodeQL for Actions, Dependabot, and automated plugin ZIP packaging.
+- PHP syntax CI, CodeQL for Actions, Dependabot, automated plugin ZIP packaging, and tagged GitHub Releases.
 
 ## 📁 Repository layout
 
@@ -35,7 +39,7 @@ WP-SSO lets an IPS / Invision Community installation use an existing WordPress a
 │   └── readme.txt              # WordPress plugin metadata/instructions
 ├── wp_api.php                  # Legacy standalone endpoint
 ├── WordPress SSO.xml           # IPS / Invision Community plugin definition
-├── .github/workflows/          # CI, CodeQL and packaging automation
+├── .github/workflows/          # CI, CodeQL, packaging and release automation
 ├── SECURITY.md                 # Security policy
 ├── LICENSE                     # MIT license
 └── README.md
@@ -43,15 +47,15 @@ WP-SSO lets an IPS / Invision Community installation use an existing WordPress a
 
 ## 🚀 Recommended installation
 
-### 1. Download the plugin package
+### 1. Download the latest release
 
-Run or download the artifact from the **Package WordPress Plugin** GitHub Actions workflow. The generated file is:
+Use the permanent latest-release links:
 
-```text
-wp-sso.zip
-```
+- **WordPress plugin:** [Download `wp-sso.zip`](https://github.com/drnecrotix/WP-SSO/releases/latest/download/wp-sso.zip)
+- **IPS integration:** [Download `WordPress-SSO-IPS.xml`](https://github.com/drnecrotix/WP-SSO/releases/latest/download/WordPress-SSO-IPS.xml)
+- **Release notes:** [View the latest GitHub Release](https://github.com/drnecrotix/WP-SSO/releases/latest)
 
-You can also create the ZIP yourself by archiving the `wp-sso/` directory while keeping `wp-sso` as the top-level folder.
+The `wp-sso.zip` archive is ready to upload directly to WordPress.
 
 ### 2. Install in WordPress
 
@@ -85,7 +89,7 @@ Environment/constant values take precedence over the database setting.
 
 ### 4. Install the IPS integration
 
-Import `WordPress SSO.xml` from the IPS / Invision Community plugin administration area and configure it with the WordPress endpoint and matching secret.
+Import `WordPress-SSO-IPS.xml` from the IPS / Invision Community plugin administration area and configure it with the WordPress endpoint and matching secret.
 
 > The bundled IPS definition is legacy and may still depend on query-string authentication. Header-based authentication is preferred for modern integrations.
 
@@ -172,7 +176,8 @@ The repository includes:
 - PHP syntax validation across PHP 7.4, 8.1, 8.2 and 8.3;
 - CodeQL analysis for GitHub Actions;
 - Dependabot for GitHub Actions dependencies;
-- automated `wp-sso.zip` packaging as a GitHub Actions artifact.
+- automated `wp-sso.zip` packaging as a GitHub Actions artifact;
+- automated tagged GitHub Releases containing `wp-sso.zip` and the IPS XML.
 
 ## ⚠️ Compatibility notes
 
@@ -185,7 +190,6 @@ The repository includes:
 
 - modernize the IPS-side integration to send header authentication;
 - add automated endpoint/authentication tests with a WordPress test environment;
-- add tagged GitHub Releases containing `wp-sso.zip` and the IPS XML;
 - document verified WordPress and IPS compatibility versions;
 - remove query-string API-key support in a future breaking release.
 
