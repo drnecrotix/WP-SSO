@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest an improvement for WP-SSO
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Explain the use case and compatibility impact. For security vulnerabilities, use SECURITY.md instead of a public issue.
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: What problem would this change solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or API you would like to see.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - WordPress plugin
+        - IPS / Invision Community integration
+        - Authentication / security
+        - Packaging / releases
+        - Documentation
+        - CI / automation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility considerations
+      description: Note any WordPress, IPS, PHP, endpoint, cookie, or authentication compatibility concerns.
+  - type: checkboxes
+    id: breaking
+    attributes:
+      label: Breaking-change check
+      options:
+        - label: This proposal may require a breaking change or migration.
+          required: false

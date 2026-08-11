@@ -2,9 +2,7 @@ name: Package WordPress Plugin
 
 on:
   pull_request:
-    paths:
-      - 'wp-sso/**'
-      - '.github/workflows/package-plugin.yml'
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:

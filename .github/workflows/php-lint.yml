@@ -3,13 +3,8 @@ name: PHP Lint
 on:
   push:
     branches: [main]
-    paths:
-      - '**/*.php'
-      - '.github/workflows/php-lint.yml'
   pull_request:
-    paths:
-      - '**/*.php'
-      - '.github/workflows/php-lint.yml'
+    branches: [main]
   workflow_dispatch:
 
 permissions:
