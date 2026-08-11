@@ -26,6 +26,7 @@ The IPS plugin can then use that endpoint as the bridge between the two applicat
 ├── wp_api.php          # WordPress-side API endpoint
 ├── WordPress SSO.xml   # IPS Community Suite plugin definition
 ├── README.md           # Project documentation
+├── SECURITY.md         # Security policy and reporting guidance
 └── .gitignore
 ```
 
@@ -33,7 +34,7 @@ The IPS plugin can then use that endpoint as the bridge between the two applicat
 
 - WordPress
 - IPS / Invision Community installed on the same environment or otherwise able to reach the WordPress endpoint
-- PHP 7.4 or newer for the existing implementation
+- PHP 7.4 or newer
 - access to the WordPress filesystem and IPS plugin administration
 
 For new deployments, prefer a currently supported PHP release and test the integration against the exact WordPress and IPS versions you use.
@@ -44,13 +45,13 @@ For new deployments, prefer a currently supported PHP release and test the integ
 
 Copy `wp_api.php` into the WordPress installation root, next to `wp-load.php`.
 
-Edit this line:
+The preferred configuration is to provide the secret through an environment variable:
 
-```php
-$apiKey = 'YOUR-API-HERE';
+```text
+WP_SSO_API_KEY=your-long-random-secret
 ```
 
-Replace the placeholder with a long random secret and keep it private.
+For legacy environments where an environment variable is not practical, the placeholder near the top of `wp_api.php` can still be replaced manually. Never commit the real secret to the repository.
 
 ### 2. Configure the shared cookie domain when required
 
@@ -68,7 +69,7 @@ Do not define `COOKIE_DOMAIN` twice. Use the value that matches your actual depl
 
 Import `WordPress SSO.xml` manually from the IPS plugin administration area.
 
-Open the WP-SSO plugin settings and configure the WordPress API endpoint and the same API secret used in `wp_api.php`.
+Open the WP-SSO plugin settings and configure the WordPress API endpoint and the same API secret used by `wp_api.php`.
 
 ### 4. Configure login flow
 
@@ -76,7 +77,7 @@ If desired, point the IPS login flow to the WordPress login page so authenticati
 
 ## Endpoint behavior
 
-The WordPress endpoint currently supports these `type` values:
+The WordPress endpoint supports these `type` values:
 
 | Type | Purpose |
 | --- | --- |
@@ -87,46 +88,78 @@ The WordPress endpoint currently supports these `type` values:
 | `logout` | Return a WordPress logout URL |
 | `test` | Return `OK` to confirm connectivity |
 
-All requests require the configured `api_key` query parameter.
+### Authentication
 
-Example connectivity request:
+New clients should send the API secret in the `X-WP-SSO-Key` header:
+
+```bash
+curl -H "X-WP-SSO-Key: YOUR_SECRET" \
+  "https://example.com/wp_api.php?type=test"
+```
+
+Bearer authentication is also accepted:
+
+```bash
+curl -H "Authorization: Bearer YOUR_SECRET" \
+  "https://example.com/wp_api.php?type=test"
+```
+
+For compatibility with the existing IPS plugin definition, the legacy `api_key` query parameter remains temporarily supported:
 
 ```text
 https://example.com/wp_api.php?api_key=YOUR_SECRET&type=test
 ```
 
+Requests using the query-string secret receive deprecation headers. New integrations should not rely on this form because URLs may be captured by access logs, browser history, reverse proxies, or monitoring tools.
+
+## Security improvements
+
+The maintained endpoint now includes several defensive measures:
+
+- constant-time secret comparison through `hash_equals()`;
+- header-based authentication support;
+- optional `WP_SSO_API_KEY` environment-variable configuration;
+- explicit request-type allowlisting;
+- HTTP/HTTPS-only redirect validation;
+- JSON content type and `no-store` headers for API responses;
+- `X-Content-Type-Options: nosniff` for JSON responses;
+- explicit failure when the default placeholder secret has not been replaced;
+- safer WordPress bootstrap resolution through `__DIR__`.
+
+The plain-text `OK` response for `type=test` is intentionally retained for compatibility.
+
 ## Security notes
 
-This repository contains a legacy integration and should be reviewed before production use.
+This repository contains a legacy integration and should still be reviewed before production use.
 
 - Never commit a real API key to GitHub.
 - Use HTTPS for both WordPress and IPS.
 - Generate a long random API secret.
+- Prefer `X-WP-SSO-Key` or Bearer authentication over query-string authentication.
 - Restrict access to the endpoint where possible.
 - Do not expose debug output or PHP errors publicly.
-- Test redirect handling carefully.
 - Keep WordPress, IPS, PHP, and all related plugins up to date.
 
-The API secret is currently supplied as a query parameter. Query-string secrets can appear in access logs, browser history, reverse-proxy logs, and monitoring systems. A future version should move authentication to a safer request mechanism such as an HTTP header.
+See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
 
 ## Known limitations
 
 - The current project is not a packaged WordPress plugin; `wp_api.php` is deployed manually.
-- The API uses a shared static secret.
-- The implementation assumes `wp-load.php` is in the same directory as `wp_api.php`.
+- Authentication still relies on a shared static secret.
+- The legacy IPS plugin may continue using the deprecated query-string API key until its request layer is modernized.
 - Compatibility with modern WordPress / IPS releases has not been continuously verified in this repository.
-- There is no automated test suite yet.
+- There is no integration test suite yet; current automation performs PHP syntax validation.
 
 ## Roadmap
 
 Potential modernization work includes:
 
 - convert the WordPress side into a standard WordPress plugin;
-- replace query-string API authentication with an HTTP header;
-- add stricter request validation and JSON response headers;
-- add automated PHP linting and security checks;
+- update the IPS integration to use header-based authentication exclusively;
+- add automated endpoint and authentication tests;
 - document supported WordPress, IPS, and PHP versions;
-- add release packaging and migration documentation.
+- add release packaging and migration documentation;
+- remove query-string API-key compatibility in a future breaking release.
 
 ## Contributing
 

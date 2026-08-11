@@ -6,6 +6,7 @@
  * Prefer setting the API key through the WP_SSO_API_KEY environment variable.
  * The query-string api_key parameter remains temporarily supported for legacy
  * IPS integrations, but new clients should send X-WP-SSO-Key instead.
+ * Legacy query-string authentication is retained for backward compatibility only.
  */
 
 $apiKey = getenv('WP_SSO_API_KEY');
