@@ -4,7 +4,8 @@
  * Plugin URI: https://github.com/drnecrotix/WP-SSO
  * Description: WordPress-side SSO bridge for IPS/Invision Community with authenticated user, role, and login URL endpoints.
  * Version: 1.1.0
- * Author: Nikola Stoyanov
+ * Author: Dr.Necrotix [NIKO]
+ * Author URI: https://github.com/drnecrotix
  * License: MIT
  * License URI: https://opensource.org/licenses/MIT
  * Requires PHP: 7.4
