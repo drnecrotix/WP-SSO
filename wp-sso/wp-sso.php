@@ -3,7 +3,7 @@
  * Plugin Name: WP-SSO Bridge for IPS
  * Plugin URI: https://github.com/drnecrotix/WP-SSO
  * Description: WordPress-side SSO bridge for IPS/Invision Community with authenticated user, role, and login URL endpoints.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Dr.Necrotix [NIKO]
  * Author URI: https://github.com/drnecrotix
  * License: MIT
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 
 final class WP_SSO_Bridge
 {
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
     const OPTION_API_KEY = 'wp_sso_api_key';
     const ENDPOINT_QUERY_VAR = 'wp_sso_api';
     const API_FILE_NAME = 'wp-sso-api.php';

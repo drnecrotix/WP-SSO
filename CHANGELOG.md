@@ -12,6 +12,13 @@ The project follows semantic versioning for packaged releases.
 - Add automated WordPress endpoint and authentication tests.
 - Expand verified WordPress / IPS compatibility documentation.
 
+
+## [1.2.0] - 2026-08-11
+
+### Changed
+
+- Prepare WP-SSO release 1.2.0.
+
 ## [1.0.0] - 2026-08-11
 
 ### Added
@@ -40,3 +47,4 @@ The project follows semantic versioning for packaged releases.
 
 [Unreleased]: https://github.com/drnecrotix/WP-SSO/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/drnecrotix/WP-SSO/releases/tag/v1.0.0
+[1.2.0]: https://github.com/drnecrotix/WP-SSO/compare/v1.2.0...v1.2.0
