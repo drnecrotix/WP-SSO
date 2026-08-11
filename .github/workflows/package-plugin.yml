@@ -1,0 +1,41 @@
+name: Package WordPress Plugin
+
+on:
+  pull_request:
+    paths:
+      - 'wp-sso/**'
+      - '.github/workflows/package-plugin.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'wp-sso/**'
+      - '.github/workflows/package-plugin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: WordPress plugin ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: php -l wp-sso/wp-sso.php
+
+      - name: Build plugin archive
+        run: |
+          mkdir -p build
+          zip -r build/wp-sso.zip wp-sso -x '*.DS_Store'
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-sso-wordpress-plugin
+          path: build/wp-sso.zip
+          if-no-files-found: error
+          retention-days: 30
