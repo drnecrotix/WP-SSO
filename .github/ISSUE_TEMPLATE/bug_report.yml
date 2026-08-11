@@ -1,0 +1,75 @@
+name: Bug report
+description: Report a reproducible WP-SSO problem
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include API secrets, cookies, private user data, or production credentials.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reliable sequence that reproduces the issue.
+      placeholder: |
+        1. Install/activate ...
+        2. Configure ...
+        3. Request ...
+        4. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: wordpress
+    attributes:
+      label: WordPress version
+      placeholder: e.g. 6.x
+    validations:
+      required: true
+  - type: input
+    id: ips
+    attributes:
+      label: IPS / Invision Community version
+      placeholder: e.g. 4.x / 5.x or not applicable
+    validations:
+      required: true
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.2
+    validations:
+      required: true
+  - type: dropdown
+    id: endpoint
+    attributes:
+      label: Integration path
+      options:
+        - Packaged WordPress plugin (`wp-sso`)
+        - Legacy standalone `wp_api.php`
+        - IPS XML / IPS-side integration
+        - Release / packaging / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant sanitized logs
+      description: Remove secrets, cookies, email addresses, private URLs, and personal information before pasting logs.
+      render: shell
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Security check
+      options:
+        - label: I removed API keys, cookies, credentials, private URLs, and personal data from this report.
+          required: true
